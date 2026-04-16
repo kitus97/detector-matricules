@@ -10,6 +10,7 @@ uv.lock
 # No pugem el dataset sencer si és molt gran
 data/
 !data/.gitkeep
+test/
 # Si guardeu models entrenats (p.ex. el fitxer del k-NN o SVM)
 models/*.pkl
 models/*.joblib
