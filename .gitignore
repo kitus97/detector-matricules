@@ -1,0 +1,27 @@
+# --- Python & uv ---
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.python-version
+uv.lock
+
+# --- Dades i Pesos (IMPORTANT) ---
+# No pugem el dataset sencer si és molt gran
+data/
+!data/.gitkeep
+# Si guardeu models entrenats (p.ex. el fitxer del k-NN o SVM)
+models/*.pkl
+models/*.joblib
+
+# --- Resultats i Proves ---
+# Carpeta on guardareu els ROIs segmentats o les matrícules detectades
+output/
+temp/
+*.log
+
+# --- OS & IDE ---
+.DS_Store
+.vscode/
+.idea/
+.ipynb_checkpoints/
