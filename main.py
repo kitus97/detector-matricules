@@ -1,88 +1,51 @@
-import numpy as np
-import cv2
-import os
-import logging
-import csv
+"""Demo Etapa A — generació de candidats a matrícula.
 
-from src.detector import plate_detector
-from src.segmenter import segmenter_test
-from src.ocr import ocr_test
-from src.types import LicensePlate, PlateDetection 
+Ús:
+    python main.py                       # processa unes imatges per defecte
+    python main.py path/a/imatge.jpg     # processa una sola imatge
+    python main.py path/a/directori/     # processa tot el directori
+"""
 
-def main():
-    # Configure logging
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-    
-    csv_path = "data/a_paths.csv"
-    
-    if not os.path.exists(csv_path):
-        print(f"Error: No s'ha trobat el fitxer CSV a {csv_path}")
-        return
+import sys
+from pathlib import Path
 
-    # Obrim el CSV i llegim les files
-    with open(csv_path, mode='r', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        
-        for row in reader:
-            img_id = row['id']
-            image_path = row['image_path']
-            
-            print(f"\n--- Processant imatge {img_id}: {image_path} ---")
-    
-            # Comprovem si el fitxer existeix realment
-            if not os.path.exists(image_path):
-                print(f"Error: No s'ha trobat cap fitxer a: {image_path}")
-                return
+from src.detector import generate_plate_candidates
 
-            # 2. Carregar la imatge
-            # OpenCV carrega en BGR per defecte
-            img = cv2.imread(image_path)
-            
-            if img is None:
-                print("Error: No es pot carregar la imatge. Comprova el format (jpg, png...).")
-                return
 
-            print(f"Imatge carregada correctament: {img.shape[1]}x{img.shape[0]} píxels.")
+# Imatges de mostra del dataset (relatives al directori de treball del repo).
+DEFAULT_SAMPLES = [
+    "../../../data/eu1.jpg",
+    "../../../data/eu2.jpg",
+    "../../../data/test_001.jpg",
+]
 
-            # 3. Crear l'objecte mestre de la matrícula
-            matricula = LicensePlate(original_image=img)
 
-            # 4. Executar la primera fase: Detecció
-            print("Iniciant detecció de la ROI...")
-            matricula.detection = plate_detector(matricula.original_image, img_id)
-
-            # 5. Comprovar el resultat
-            if matricula.detection.contour.any():
-                print("Èxit! S'ha detectat un possible contorn de matrícula.")
-                print(f"Vèrtexs trobats:\n{matricula.detection.contour}")
+def main() -> None:
+    if len(sys.argv) > 1:
+        target = sys.argv[1]
+        results = generate_plate_candidates(target, verbose=True)
+    else:
+        results = {}
+        for sample in DEFAULT_SAMPLES:
+            p = Path(sample)
+            if not p.exists():
+                # Fallback: mira a ./data/ relatiu al fitxer actual.
+                alt = Path(__file__).parent / "data" / Path(sample).name
+                p = alt if alt.exists() else p
+            if p.exists():
+                results.update(generate_plate_candidates(str(p), verbose=True))
             else:
-                print("No s'ha trobat cap polígon de 4 vèrtexs que sembli una matrícula.")
+                print(f"[INFO] Mostra no trobada: {sample}")
 
-def pipeline_test(image: str) -> str:
-    """
-    Funció de prova per a la pipeline completa. Aquesta funció crida les funcions de prova del detector, segmentador i OCR en ordre i retorna el resultat final.
-
-    Args:
-        image (str): El nom o camí de la imatge d'entrada.
-    Returns:
-        str: El resultat final de la pipeline de prova.
-    """
-    # Crida al detector
-    detected_image = plate_detector(image)
-    print(f"Detector Test Result: {detected_image}")
-
-    # Crida al segmentador
-    segmented_image = segmenter_test(detected_image)
-    print(f"Segmenter Test Result: {segmented_image}")
-
-    # Crida al OCR
-    ocr_result = ocr_test(segmented_image)
-    print(f"OCR Test Result: {ocr_result}")
-
-    return ocr_result
+    print("\n=== RESUM ===")
+    for name, cands in results.items():
+        print(f"  {name}: {len(cands)} candidats")
+        for c in cands:
+            print(
+                f"    bbox=({c['x1']},{c['y1']})-({c['x2']},{c['y2']}) "
+                f"AR={c['aspect_ratio']:.2f} sol={c['solidity']:.2f} "
+                f"area={c['area']}"
+            )
 
 
 if __name__ == "__main__":
