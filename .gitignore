@@ -26,3 +26,6 @@ temp/
 .vscode/
 .idea/
 .ipynb_checkpoints/
+
+# --- Altres ---
+.claude/

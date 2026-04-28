@@ -9,14 +9,20 @@
 import sys
 from pathlib import Path
 
-from src.pipeline.detector import generate_plate_candidates
+from pipeline.detector import generate_plate_candidates
 
 
 # Imatges de mostra del dataset (relatives al directori de treball del repo).
 DEFAULT_SAMPLES = [
-    "../../../data/eu1.jpg",
-    "../../../data/eu2.jpg",
-    "../../../data/test_001.jpg",
+    "data/eu1.jpg",
+    "data/eu2.jpg",
+    "data/test_001.jpg",
+    "data/test_002.jpg",
+    "data/test_003.jpg",
+    "data/test_004.jpg",
+    "data/test_005.jpg",
+    "data/test_006.jpg",
+    "data/test_007.jpg",
 ]
 
 
