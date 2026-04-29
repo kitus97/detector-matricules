@@ -11,24 +11,28 @@ from pathlib import Path
 
 from pipeline.detector import generate_plate_candidates
 
-
 # Imatges de mostra del dataset (relatives al directori de treball del repo).
+
+DATA_DIR = Path(__file__).parent / "../data"
+
 DEFAULT_SAMPLES = [
-    "data/eu1.jpg",
-    "data/eu2.jpg",
-    "data/test_001.jpg",
-    "data/test_002.jpg",
-    "data/test_003.jpg",
-    "data/test_004.jpg",
-    "data/test_005.jpg",
-    "data/test_006.jpg",
-    "data/test_007.jpg",
+    DATA_DIR / "eu1.jpg",
+    # DATA_DIR / "eu2.jpg",
+    # DATA_DIR / "test_001.jpg",
+    # DATA_DIR / "test_002.jpg",
+    # DATA_DIR / "test_003.jpg",
+    # DATA_DIR / "test_004.jpg",
+    # DATA_DIR / "test_005.jpg",
+    # DATA_DIR / "test_006.jpg",
+    # DATA_DIR / "test_007.jpg",
 ]
 
+DEFAULT_SAMPLES = list(DATA_DIR.glob("*.jpg"))
 
 def main() -> None:
     if len(sys.argv) > 1:
         target = sys.argv[1]
+        # results = generate_plate_candidates(target, verbose=True)
         results = generate_plate_candidates(target, verbose=True)
     else:
         results = {}
@@ -39,6 +43,7 @@ def main() -> None:
                 alt = Path(__file__).parent / "data" / Path(sample).name
                 p = alt if alt.exists() else p
             if p.exists():
+                # results.update(generate_plate_candidates(str(p), verbose=True))
                 results.update(generate_plate_candidates(str(p), verbose=True))
             else:
                 print(f"[INFO] Mostra no trobada: {sample}")
