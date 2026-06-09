@@ -48,7 +48,7 @@ ADAPT_BLOCK         = 31        # blockSize per a adaptiveThreshold
 ADAPT_C             = 15        # constant C per a adaptiveThreshold
 MORPH_CLOSE_KERNEL  = (1, 3)    # consolida traços fins (p. ex. 'I') sense fusionar veïns
 
-DESKEW_MIN_CANDIDATS = 5        # mínim de contorns per estimar angle
+DESKEW_MIN_CANDIDATS = 3        # mínim de centroides per estimar l'angle (ADR-003)
 DESKEW_ANGLE_MAX     = 15.0     # graus: si |angle| supera, no rota
 
 H_CHAR_MIN_REL  = 0.85          # h > h_med * H_CHAR_MIN_REL
