@@ -23,7 +23,7 @@ import torch.nn as nn
 
 class CharCNN(nn.Module):
     """
-    CNN compacte per a la classificació de caràcters alfanumèrics (62 classes).
+    CNN compacte per a la classificació de caràcters alfanumèrics (36 classes: A–Z, 0–9).
     Entrada: tensor 1×28×28 normalitzat a [-1, 1].
     Sortida: logits crus (sense Softmax) de mida n_classes.
     """

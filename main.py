@@ -236,15 +236,19 @@ def run(
                 "box":       "",
             })
 
-        # Visualització opcional
+        # Visualització opcional. En entorns sense display (headless/CT) cv2.imshow
+        # llança cv2.error: el capturem perquè no aturi el processament del lot.
         if show or debug:
             annotated = draw_results(img_bgr, results)
-            cv2.imshow(img_path.name, annotated)
-            key = cv2.waitKey(0 if debug else 500)
-            cv2.destroyAllWindows()
-            if key == ord("q"):
-                log.info("Interromput per l'usuari.")
-                break
+            try:
+                cv2.imshow(img_path.name, annotated)
+                key = cv2.waitKey(0 if debug else 500)
+                cv2.destroyAllWindows()
+                if key == ord("q"):
+                    log.info("Interromput per l'usuari.")
+                    break
+            except cv2.error:
+                log.warning("Sense display disponible: s'omet la visualització (--show/--debug).")
 
     total = time.time() - t0_global
     n_detected = sum(1 for r in csv_rows if r["plate"])

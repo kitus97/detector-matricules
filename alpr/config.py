@@ -8,14 +8,17 @@ Cap mòdul ha de tenir constants màgiques pròpies: tot passa per aquí.
 from pathlib import Path
 
 # ── Rutes ──────────────────────────────────────────────────────────────────────
-DATA_RAW_DIR       = Path("data/raw")
-DATA_PROCESSED_DIR = Path("data/processed")
-DATA_CHARS_DIR     = Path("data/chars")
-DATA_SYNTHETIC_DIR = Path("data/synthetic")
-MODELS_DIR         = Path("models")
+# Ancorades a l'arrel del projecte (alpr/config.py → parents[1]), no al cwd, perquè
+# el pipeline funcioni des de qualsevol directori d'execució.
+ROOT_DIR           = Path(__file__).resolve().parents[1]
+DATA_RAW_DIR       = ROOT_DIR / "data" / "raw"
+DATA_PROCESSED_DIR = ROOT_DIR / "data" / "processed"
+DATA_CHARS_DIR     = ROOT_DIR / "data" / "chars"
+DATA_SYNTHETIC_DIR = ROOT_DIR / "data" / "synthetic"
+MODELS_DIR         = ROOT_DIR / "models"
 MODEL_CNN_PATH     = MODELS_DIR / "char_cnn_best.pth"
-OUTPUT_DIR         = Path("output")
-FONTS_DIR          = Path("resources/fonts")
+OUTPUT_DIR         = ROOT_DIR / "output"
+FONTS_DIR          = ROOT_DIR / "resources" / "fonts"
 
 IMAGE_EXTENSIONS   = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
 
@@ -77,6 +80,6 @@ PROJ_SMOOTH_WIN = 9             # finestra de la mitjana mòbil del histograma d
 PROJ_INK_FRAC   = 0.12          # fracció del màxim per considerar una columna "amb tinta"
 
 # ── Fase 3 — OCR ───────────────────────────────────────────────────────────────
-CHARS          = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")  # 32 classes
+CHARS          = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")  # 36 classes (A–Z + 0–9)
 OCR_INPUT_SIZE = 28
 CONF_THRESHOLD = 0.5            # filtre de baixa confiança en inferència
