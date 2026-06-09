@@ -11,7 +11,7 @@ Format "vj" (default i recomanat):
 import cv2
 import numpy as np
 
-import config
+from alpr import config
 
 
 def preprocessa_caracter(

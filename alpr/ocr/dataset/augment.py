@@ -19,7 +19,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-import config
+from alpr import config
 
 log = logging.getLogger(__name__)
 

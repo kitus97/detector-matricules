@@ -8,7 +8,7 @@ Grisos → Gaussian → CLAHE.
 import cv2
 import numpy as np
 
-import config
+from alpr import config
 
 
 def preprocess(img_bgr: np.ndarray) -> np.ndarray:

@@ -71,6 +71,6 @@ OUTPUT_SIZE     = 28            # mida de sortida del caràcter per a la CNN
 FORMAT_SORTIDA  = "vj"          # "vj" (tight crop + resize) | "regla-or" (llenç 64×64)
 
 # ── Fase 3 — OCR ───────────────────────────────────────────────────────────────
-CHARS          = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")  # 62 classes
+CHARS          = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")  # 32 classes
 OCR_INPUT_SIZE = 28
 CONF_THRESHOLD = 0.5            # filtre de baixa confiança en inferència

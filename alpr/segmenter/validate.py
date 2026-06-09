@@ -10,7 +10,7 @@ el dataset d'entrenament amb caràcters espuris.
 
 import numpy as np
 
-import config
+from alpr import config
 
 
 def is_plausible_plate(
