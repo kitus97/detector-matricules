@@ -40,7 +40,7 @@ from alpr.common.io import load_image, iter_images
 from alpr.detector.detector import detect_boxes, detect_debug
 from alpr.segmenter.segmenter import segment, segmenta_caixa
 from alpr.ocr.infer import load_model, predict
-# from alpr.reader.reader import read_plate
+from alpr.reader.reader import read_plate
 
 # ─── Logger ───────────────────────────────────────────────────────────────────
 
@@ -118,12 +118,12 @@ def process_image(
         confs_v = [v[1] for v in valid]
 
         # Fase 4 — Reader (correcció contextual)
-        # plate     = read_plate(chars_v)
+        plate     = read_plate(chars_v)
         mean_conf = float(np.mean(confs_v))
 
         results.append({
             "box":       box,
-            "plate":     "plate",
+            "plate":     plate,
             "n_chars":   len(chars_v),
             "chars":     chars_v,
             "confs":     confs_v,

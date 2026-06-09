@@ -13,7 +13,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from alpr import config
+import config
 
 log = logging.getLogger(__name__)
 

@@ -11,7 +11,7 @@ Opening: elimina blobs massa fins (soroll residual).
 import cv2
 import numpy as np
 
-from alpr import config
+import config
 
 
 def morphology_and_label(

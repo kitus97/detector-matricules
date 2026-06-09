@@ -10,7 +10,7 @@ la matrícula, ja que el segmentador els descartarà a la fase 2.
 
 import numpy as np
 
-from alpr import config
+import config
 
 
 def filter_by_shape(

@@ -18,7 +18,7 @@ import torch.nn as nn
 from PIL import Image
 from torchvision import transforms
 
-from alpr import config
+import config
 from .model import CharCNN
 
 log = logging.getLogger(__name__)

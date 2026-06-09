@@ -9,7 +9,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from alpr import config
+import config
 
 
 def load_image(path: Path | str) -> np.ndarray:

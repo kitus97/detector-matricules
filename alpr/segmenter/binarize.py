@@ -11,7 +11,7 @@ reals que el model OCR veurà durant la inferència.
 import cv2
 import numpy as np
 
-from alpr import config
+import config
 
 
 def binarize_adaptive(aligned_bgr: np.ndarray) -> np.ndarray:

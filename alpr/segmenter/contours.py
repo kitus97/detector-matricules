@@ -7,7 +7,7 @@ Fase 2, pas 2–3: extracció de contorns, filtre geomètric i deduplicació IoU
 import numpy as np
 import cv2
 
-from alpr import config
+import config
 from alpr.common.geometry import iou
 
 

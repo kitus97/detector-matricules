@@ -24,7 +24,7 @@ from .contours    import extract_contours, filter_geometric, remove_overlapping
 from .validate    import is_plausible_plate
 from .char_export import crops_and_resize
 
-from alpr import config
+import config
 
 
 # ══════════════════════════════════════════════════════════════════════════════

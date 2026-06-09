@@ -10,7 +10,7 @@ Si l'angle supera DESKEW_ANGLE_MAX no rota (probablement soroll).
 import cv2
 import numpy as np
 
-from alpr import config
+import config
 
 
 def deskew(crop_bgr: np.ndarray) -> tuple[np.ndarray, float]:
