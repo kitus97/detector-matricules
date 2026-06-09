@@ -28,24 +28,57 @@ def extract_contours(thresh: np.ndarray) -> list[tuple[int, int, int, int]]:
 
 def filter_geometric(
     bboxes: list[tuple[int, int, int, int]],
+    h_placa: int,
+    strict: bool = True,
 ) -> list[tuple[int, int, int, int]]:
     """
-    Filtre d'alçada mediana (±15 %) i aspect ratio [AR_MIN, AR_MAX].
+    Filtre geomètric groller RELATIU A L'ALÇADA DE LA PLACA (`h_placa`), mai px
+    absoluts. Elimina blobs massa petits/grans o amb aspect ratio implausible.
 
-    AR mínim 0.05 per no perdre la 'I' (AR real ≈ 0.05–0.12).
-    Retorna la llista filtrada ordenada per x.
+    En mode tolerant (`strict=False`, passada 1 per al deskew) eixampla els
+    llindars; en mode estricte (`strict=True`, passada 2) els ajusta. Mateixa
+    lògica que `filtra_geometric` del segmentador de referència.
+
+    - alçada ∈ [H_CHAR_MIN_REL, H_CHAR_MAX_REL]·h_placa (×0.7/×1.2 si tolerant)
+    - aspect ratio ∈ [AR_MIN, AR_MAX] (AR_MIN=0.05 preserva la 'I'; ×1.3 si tolerant)
+    - àrea ≥ AREA_MIN_REL·h_placa²  (elimina speckle)
+
+    Retorna la llista filtrada (sense ordenar; remove_overlapping ja ordena per x).
     """
-    heights = [h for (_, _, _, h) in bboxes if h > 10]
-    if not heights:
+    h_min    = config.H_CHAR_MIN_REL * (1.0 if strict else 0.7) * h_placa
+    h_max    = config.H_CHAR_MAX_REL * (1.0 if strict else 1.2) * h_placa
+    ar_max   = config.AR_MAX * (1.0 if strict else 1.3)
+    area_min = config.AREA_MIN_REL * (h_placa ** 2)
+
+    out: list[tuple[int, int, int, int]] = []
+    for (x, y, w, h) in bboxes:
+        if h <= 0 or w <= 0:
+            continue
+        if not (h_min <= h <= h_max):
+            continue
+        if not (config.AR_MIN <= w / float(h) <= ar_max):
+            continue
+        if (w * h) < area_min:
+            continue
+        out.append((x, y, w, h))
+    return out
+
+
+def select_dominant_row(
+    bboxes: list[tuple[int, int, int, int]],
+) -> list[tuple[int, int, int, int]]:
+    """
+    De tots els candidats grollers, conserva els que tenen alçada propera a la
+    MEDIANA (la fila dominant de caràcters), robust a alguns blobs de soroll.
+
+    Banda relativa a la mediana: [1−H_MED_TOL, 1+H_MED_TOL]·mediana. Equival a
+    `selecciona_fila_per_mediana` del segmentador de referència.
+    """
+    if not bboxes:
         return []
-    h_med  = float(np.median(heights))
-    result = [
-        (x, y, w, h) for (x, y, w, h) in bboxes
-        if (h_med * config.H_CHAR_MIN_REL < h < h_med * config.H_CHAR_MAX_REL)
-        and (config.AR_MIN < w / float(h) < config.AR_MAX)
-    ]
-    result.sort(key=lambda b: b[0])
-    return result
+    med_h  = float(np.median([h for (_, _, _, h) in bboxes]))
+    lo, hi = (1 - config.H_MED_TOL) * med_h, (1 + config.H_MED_TOL) * med_h
+    return [b for b in bboxes if lo <= b[3] <= hi]
 
 
 def remove_overlapping(

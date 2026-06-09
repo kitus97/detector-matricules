@@ -4,8 +4,8 @@ alpr/segmenter/segmenter.py
 API pública del segmentador de caràcters (Fase 2).
 
 Pipeline per crop:
-  normalitza_escala → deskew → binarize_adaptive → extract_contours
-  → filter_geometric → remove_overlapping → is_plausible_plate → crops_and_resize
+  normalitza_escala → deskew → binarize_adaptive → extract_contours → filter_geometric
+  → select_dominant_row → remove_overlapping → is_plausible_plate → crops_and_resize
 
 API pública:
   segment(roi_bgr)            -> list[np.ndarray]   [] si rebutjat
@@ -21,7 +21,10 @@ import numpy as np
 from .normalize   import normalitza_escala
 from .deskew      import deskew
 from .binarize    import binarize_adaptive
-from .contours    import extract_contours, filter_geometric, remove_overlapping
+from .contours    import (
+    extract_contours, filter_geometric, select_dominant_row, remove_overlapping,
+)
+from .projection  import detecta_projeccio
 from .validate    import is_plausible_plate
 from .char_export import crops_and_resize
 
@@ -32,7 +35,11 @@ from alpr import config
 # API pública
 # ══════════════════════════════════════════════════════════════════════════════
 
-def segment(roi_bgr: np.ndarray, fmt: str | None = None) -> list[np.ndarray]:
+def segment(
+    roi_bgr: np.ndarray,
+    fmt: str | None = None,
+    metode: str = "contorns",
+) -> list[np.ndarray]:
     """
     Segmenta els caràcters d'un crop de matrícula.
 
@@ -41,6 +48,8 @@ def segment(roi_bgr: np.ndarray, fmt: str | None = None) -> list[np.ndarray]:
 
     El pipeline retorna [] per a falsos positius del detector: és el mecanisme
     de rebuig de la Fase 2 (veure contractes a config.py / guia §4).
+
+    `metode`: "contorns" (oficial, ADR-002) o "projeccio" (alternatiu, per comparar).
     """
     # Normalitza l'escala abans de detectar (D9/ADR-002): imprescindible perquè
     # blockSize=31 sigui coherent amb caràcters de plaques de 18–46 px. H i W es
@@ -51,10 +60,12 @@ def segment(roi_bgr: np.ndarray, fmt: str | None = None) -> list[np.ndarray]:
 
     aligned, _angle  = deskew(roi_bgr)
     thresh            = binarize_adaptive(aligned)
-    all_bboxes        = extract_contours(thresh)
-    filtered          = filter_geometric(all_bboxes)
+    all_bboxes        = (detecta_projeccio(thresh) if metode == "projeccio"
+                         else extract_contours(thresh))
+    filtered          = filter_geometric(all_bboxes, H)
+    filtered          = select_dominant_row(filtered)
     filtered          = remove_overlapping(filtered)
-    accepted, _reason = is_plausible_plate(filtered, W, H)
+    accepted, _reason = is_plausible_plate(filtered, W)
 
     if not accepted:
         return []
@@ -62,7 +73,11 @@ def segment(roi_bgr: np.ndarray, fmt: str | None = None) -> list[np.ndarray]:
     return crops_and_resize(thresh, filtered, fmt)
 
 
-def segmenta_caixa(roi_bgr: np.ndarray, fmt: str | None = None) -> dict:
+def segmenta_caixa(
+    roi_bgr: np.ndarray,
+    fmt: str | None = None,
+    metode: str = "contorns",
+) -> dict:
     """
     Com segment però retorna un dict complet amb totes les etapes.
     Útil per a diagnòstic i visualització.
@@ -79,10 +94,12 @@ def segmenta_caixa(roi_bgr: np.ndarray, fmt: str | None = None) -> dict:
 
     aligned, angle   = deskew(roi_bgr)
     thresh            = binarize_adaptive(aligned)
-    all_bboxes        = extract_contours(thresh)
-    filtered          = filter_geometric(all_bboxes)
+    all_bboxes        = (detecta_projeccio(thresh) if metode == "projeccio"
+                         else extract_contours(thresh))
+    filtered          = filter_geometric(all_bboxes, H)
+    filtered          = select_dominant_row(filtered)
     filtered          = remove_overlapping(filtered)
-    accepted, reason  = is_plausible_plate(filtered, W, H)
+    accepted, reason  = is_plausible_plate(filtered, W)
     chars             = crops_and_resize(thresh, filtered, fmt) if accepted else []
 
     return {

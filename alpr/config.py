@@ -51,13 +51,13 @@ MORPH_CLOSE_KERNEL  = (1, 3)    # consolida traços fins (p. ex. 'I') sense fusi
 DESKEW_MIN_CANDIDATS = 3        # mínim de centroides per estimar l'angle (ADR-003)
 DESKEW_ANGLE_MAX     = 15.0     # graus: si |angle| supera, no rota
 
-H_CHAR_MIN_REL  = 0.85          # h > h_med * H_CHAR_MIN_REL
-H_CHAR_MAX_REL  = 1.15          # h < h_med * H_CHAR_MAX_REL
-AR_MIN          = 0.05          # aspect ratio mínim (cobreix la 'I')
-AR_MAX          = 0.95          # aspect ratio màxim
-AREA_MIN_REL    = 0.0           # reservat (no usat encara)
+H_CHAR_MIN_REL  = 0.30          # h_min = H_CHAR_MIN_REL · h_placa (filtre groller)
+H_CHAR_MAX_REL  = 1.05          # h_max = H_CHAR_MAX_REL · h_placa
+AR_MIN          = 0.05          # aspect ratio mínim (cobreix la 'I'/'1', AR real 0.05–0.12)
+AR_MAX          = 1.10          # aspect ratio màxim (per sobre sol ser soroll o fusions)
+AREA_MIN_REL    = 0.015         # àrea mínima del blob / h_placa² (elimina speckle)
 
-H_MED_TOL       = 0.85          # = H_CHAR_MIN_REL (alias explícit)
+H_MED_TOL       = 0.30          # banda de la fila dominant: [1±H_MED_TOL]·mediana d'alçades
 ROW_STD_H_MAX   = 0.20          # std_h / h_med màxima (uniformitat)
 ROW_STD_CY_MAX  = 0.25          # std_cy / h_med màxima (alineació baseline)
 WIDTH_OCC_MIN   = 0.30          # cobertura horitzontal mínima del crop
@@ -71,6 +71,10 @@ MARGIN          = 6             # marge interior al llenç (píxels)
 OUTPUT_SIZE     = 28            # mida de sortida del caràcter per a la CNN
 
 FORMAT_SORTIDA  = "vj"          # "vj" (tight crop + resize) | "regla-or" (llenç 64×64)
+
+# Projecció vertical (mètode de segmentació ALTERNATIU, opcional)
+PROJ_SMOOTH_WIN = 9             # finestra de la mitjana mòbil del histograma de columnes
+PROJ_INK_FRAC   = 0.12          # fracció del màxim per considerar una columna "amb tinta"
 
 # ── Fase 3 — OCR ───────────────────────────────────────────────────────────────
 CHARS          = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")  # 32 classes

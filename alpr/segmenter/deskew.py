@@ -62,7 +62,9 @@ def deskew(crop_bgr: np.ndarray) -> tuple[np.ndarray, float]:
     """
     thresh    = binarize_adaptive(crop_bgr)
     bboxes    = extract_contours(thresh)
-    candidats = filter_geometric(bboxes)
+    # Passada 1: filtre TOLERANT (strict=False) relatiu a l'alçada del crop, només
+    # per obtenir prou candidats per estimar l'angle.
+    candidats = filter_geometric(bboxes, crop_bgr.shape[0], strict=False)
     angle     = estimate_skew_angle(candidats)
 
     if abs(angle) < 1e-3:

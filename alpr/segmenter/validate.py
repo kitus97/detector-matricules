@@ -16,7 +16,6 @@ from alpr import config
 def is_plausible_plate(
     bboxes: list[tuple[int, int, int, int]],
     img_w: int,
-    img_h: int,  # reservat per a futures comprovacions
 ) -> tuple[bool, str]:
     """
     Valida si els bboxes detectats corresponen a una matrícula real.
@@ -26,6 +25,9 @@ def is_plausible_plate(
       2. Uniformitat d'alçades:     std_h  / h_med  <= ROW_STD_H_MAX
       3. Alineació de baseline:     std_cy / h_med  <= ROW_STD_CY_MAX
       4. Cobertura horitzontal:     (x_max - x_min) / img_w >= WIDTH_OCC_MIN
+
+    Tots els llindars de fila són relatius a la mediana d'alçades o a img_w (mai
+    px absoluts), de manera que no cal l'alçada del crop.
 
     Retorna (True, '') si vàlid, o (False, motiu) si rebutjat.
     """
