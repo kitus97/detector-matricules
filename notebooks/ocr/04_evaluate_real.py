@@ -480,7 +480,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Avalua CharCNN sobre caràcters reals segmentats."
     )
-    parser.add_argument("--segmented_dir", default="notebooks/data/chars",
+    parser.add_argument("--segmented_dir", default="data/chars",
                         help="Directori amb els PNGs segmentats")
     parser.add_argument("--gt_dir",        default="data/raw",
                         help="Directori amb els fitxers GT .txt")
