@@ -70,7 +70,10 @@ def segment(
     if not accepted:
         return []
 
-    return crops_and_resize(thresh, filtered, fmt)
+    # El format "regla-or" re-binaritza el glif en grisos (Grup D); el "vj" usa
+    # el binari. Passem tots dos: el gray és l'aligned normalitzat i deskew-at.
+    gray = cv2.cvtColor(aligned, cv2.COLOR_BGR2GRAY)
+    return crops_and_resize(thresh, gray, filtered, fmt)
 
 
 def segmenta_caixa(
@@ -100,7 +103,8 @@ def segmenta_caixa(
     filtered          = select_dominant_row(filtered)
     filtered          = remove_overlapping(filtered)
     accepted, reason  = is_plausible_plate(filtered, W)
-    chars             = crops_and_resize(thresh, filtered, fmt) if accepted else []
+    gray              = cv2.cvtColor(aligned, cv2.COLOR_BGR2GRAY)
+    chars             = crops_and_resize(thresh, gray, filtered, fmt) if accepted else []
 
     return {
         "aligned":          aligned,
