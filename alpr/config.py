@@ -41,7 +41,9 @@ MIN_WIDTH        = 40
 MIN_HEIGHT       = 10
 
 # ── Fase 2 — Segmentador ───────────────────────────────────────────────────────
-NORM_H              = 48        # alçada de normalització del crop
+NORM_H              = 96        # alçada de normalització del crop abans de detectar
+                               # (D9/ADR-002: les plaques del dataset són de 18–46 px i
+                               # blockSize=31 falla sense escalar a una alçada de treball comuna)
 ADAPT_BLOCK         = 31        # blockSize per a adaptiveThreshold
 ADAPT_C             = 15        # constant C per a adaptiveThreshold
 MORPH_CLOSE_KERNEL  = (1, 3)    # consolida traços fins (p. ex. 'I') sense fusionar veïns

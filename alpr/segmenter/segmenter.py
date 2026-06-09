@@ -4,8 +4,8 @@ alpr/segmenter/segmenter.py
 API pública del segmentador de caràcters (Fase 2).
 
 Pipeline per crop:
-  deskew → binarize_adaptive → extract_contours → filter_geometric
-  → remove_overlapping → is_plausible_plate → crops_and_resize
+  normalitza_escala → deskew → binarize_adaptive → extract_contours
+  → filter_geometric → remove_overlapping → is_plausible_plate → crops_and_resize
 
 API pública:
   segment(roi_bgr)            -> list[np.ndarray]   [] si rebutjat
@@ -18,6 +18,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from .normalize   import normalitza_escala
 from .deskew      import deskew
 from .binarize    import binarize_adaptive
 from .contours    import extract_contours, filter_geometric, remove_overlapping
@@ -41,6 +42,11 @@ def segment(roi_bgr: np.ndarray, fmt: str | None = None) -> list[np.ndarray]:
     El pipeline retorna [] per a falsos positius del detector: és el mecanisme
     de rebuig de la Fase 2 (veure contractes a config.py / guia §4).
     """
+    # Normalitza l'escala abans de detectar (D9/ADR-002): imprescindible perquè
+    # blockSize=31 sigui coherent amb caràcters de plaques de 18–46 px. H i W es
+    # prenen de la imatge normalitzada perquè els bboxes (i la cobertura
+    # d'is_plausible_plate) quedin al mateix espai de coordenades.
+    roi_bgr = normalitza_escala(roi_bgr)
     H, W = roi_bgr.shape[:2]
 
     aligned, _angle  = deskew(roi_bgr)
@@ -67,6 +73,8 @@ def segmenta_caixa(roi_bgr: np.ndarray, fmt: str | None = None) -> dict:
       accepted, rejection_reason,
       chars  (list[np.ndarray 28×28] o [])
     """
+    # Normalització d'escala prèvia (D9/ADR-002), idèntica a segment().
+    roi_bgr = normalitza_escala(roi_bgr)
     H, W = roi_bgr.shape[:2]
 
     aligned, angle   = deskew(roi_bgr)
