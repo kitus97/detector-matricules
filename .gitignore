@@ -22,6 +22,28 @@ temp/
 *.log
 models/
 
+# --- Memòria tècnica ---
+# El projecte LaTeX es treballa a Overleaf; al repositori només hi ha el PDF
+# final entregat (docs/Memoria_MarcRams.pdf).
+memoria/
+
+# --- Artefactes de compilació LaTeX ---
+*.aux
+*.bbl
+*.bcf
+*.bcf-SAVE-ERROR
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+
+# --- Eines d'assistència (configuració local, no forma part de l'entrega) ---
+CLAUDE.md
+.claude/
+
 # --- OS & IDE ---
 .DS_Store
 .vscode/
