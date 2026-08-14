@@ -1,17 +1,23 @@
 """
 scripts/experiments/error_attribution.py
 =========================================
-E9 — Atribució d'errors end-to-end (memòria §6, discussió).
+E9 — Atribució d'errors end-to-end (memòria §5.3 i §6, discussió).
 
 Per cada imatge amb GT, segueix la matrícula pel pipeline i determina ON es perd:
 
-  · detector_miss   → cap caixa detectada conté el centre del GT (Fase 1).
-  · segmenter_reject→ la caixa del GT existeix però el segmentador la rebutja (Fase 2).
-  · ocr_error       → se segmenta però la lectura final no coincideix amb el GT (Fase 3).
-  · perfecta        → la lectura coincideix exactament amb el GT.
+  · detector_miss      → cap caixa detectada conté el centre del GT (Fase 1).
+  · segmenter_reject   → la caixa del GT existeix però el segmentador la rebutja (Fase 2).
+  · segmenter_recompte → se segmenta però la lectura té una LONGITUD diferent del GT:
+                         sobre/infra-segmentació (Fase 2). Per molt perfecte que fos
+                         l'OCR, aquestes matrícules mai serien correctes.
+  · ocr_confusio       → longitud correcta però algun caràcter mal classificat (Fase 3).
+  · perfecta           → la lectura coincideix exactament amb el GT.
 
-És el "funnel" que explica quants plats es perden a cada fase i on invertir
-esforç (típicament: l'OCR, pel domain gap).
+El desglossament recompte/confusió evita el biaix d'atribuir a l'OCR tot el que
+falla després de l'acceptació. La longitud es mesura sobre la lectura EFECTIVA
+(després del filtre de confiança), el mateix criteri que `delta_len` a
+export_analysis. És el "funnel" que explica quants plats es perden a cada fase
+i on invertir esforç.
 
 Ús
 --
@@ -70,7 +76,11 @@ def attribute(img, gt_box, gt_plate, model, idx_to_class, device) -> tuple[str, 
     plate = read_plate(chars_v)
     if plate == gt_plate:
         return "perfecta", plate
-    return "ocr_error", plate
+    # Longitud efectiva diferent del GT → l'error és de RECOMPTE (segmentació),
+    # no de classificació: cap OCR el podria recuperar.
+    if len(plate) != len(gt_plate):
+        return "segmenter_recompte", plate
+    return "ocr_confusio", plate
 
 
 def main() -> None:
@@ -100,18 +110,27 @@ def main() -> None:
     print(f"\n{'Categoria':<20} {'Imatges':>8} {'%':>7}")
     print("─" * 36)
     # Ordre del funnel
-    for cat in ("perfecta", "ocr_error", "segmenter_reject", "detector_miss"):
+    for cat in ("perfecta", "ocr_confusio", "segmenter_recompte",
+                "segmenter_reject", "detector_miss"):
         n = cats.get(cat, 0)
         print(f"{cat:<20} {n:>8} {n/total:>6.1%}")
     print("─" * 36)
     print(f"{'TOTAL':<20} {total:>8}")
 
     # Quants plats arriben a cada fase (funnel acumulat)
-    detected = total - cats.get("detector_miss", 0)
-    segmented = detected - cats.get("segmenter_reject", 0)
+    detected   = total - cats.get("detector_miss", 0)
+    segmented  = detected - cats.get("segmenter_reject", 0)
+    count_ok   = segmented - cats.get("segmenter_recompte", 0)
     print(f"\nFunnel:  detectades {detected}/{total} ({detected/total:.0%})  →  "
           f"segmentades {segmented}/{total} ({segmented/total:.0%})  →  "
+          f"recompte correcte {count_ok}/{total} ({count_ok/total:.0%})  →  "
           f"perfectes {cats.get('perfecta',0)}/{total} ({cats.get('perfecta',0)/total:.0%})")
+
+    # Pèrdues agregades per fase responsable
+    seg_total = cats.get("segmenter_reject", 0) + cats.get("segmenter_recompte", 0)
+    print(f"\nPèrdues del segmentador (rebuig + recompte): {seg_total}/{total} "
+          f"({seg_total/total:.1%})  ·  confusió pura de l'OCR: "
+          f"{cats.get('ocr_confusio',0)}/{total} ({cats.get('ocr_confusio',0)/total:.1%})")
 
     args.csv.parent.mkdir(parents=True, exist_ok=True)
     with args.csv.open("w", newline="", encoding="utf-8") as f:
